@@ -63,3 +63,62 @@ A inspeção não encontrou grupos com atributos idênticos e rótulos conflitan
 **Cuidados:** preservar os dados brutos, evitar vazamento entre conjuntos e documentar a estratégia de divisão antes de treinar modelos.
 
 **Status:** decisão inicial, sujeita a revisão após a avaliação experimental.
+
+
+### Regra experimental para seleção do limiar
+
+**Objetivo:** reduzir o volume de alertas sem deixar o recall de fraude abaixo da meta definida para o experimento.
+
+- Meta inicial de recall: pelo menos 85% na validação.
+- Critério de desempate: minimizar o total de alertas.
+- Modelo avaliado: regressão logística com `class_weight="balanced"`.
+- Resultado observado: o limiar 0,95 atende à meta e gera 166 alertas, detectando 64 das 75 fraudes na validação.
+- Limitação: essa meta é uma hipótese experimental, não um requisito validado com uma instituição financeira.
+- Controle de avaliação: o conjunto de teste permanece reservado até que o modelo e o limiar sejam definidos.
+
+A escolha será reavaliada após a comparação com outros modelos e a análise dos custos de falsos positivos e falsos negativos.
+
+
+### Seleção do limiar — Regressão Logística
+
+**Regra experimental:** manter recall de fraude de pelo menos 85% na validação e minimizar o número total de alertas entre os limiares elegíveis.
+
+**Resultado:** limiar candidato de 0,95.
+
+- Recall: 85,33%.
+- Precisão: 38,55%.
+- Fraudes detectadas: 64 de 75.
+- Fraudes perdidas: 11.
+- Falsos positivos: 102.
+- Total de alertas: 166.
+
+**Limitação:** a meta de recall é uma hipótese experimental para o portfólio. O limiar deverá ser avaliado em conjunto com outros modelos e, posteriormente, no conjunto de teste reservado.
+
+A seleção não deve ser interpretada como uma política operacional validada para uma instituição financeira.
+
+
+## Conclusão e limitações
+
+O Random Forest foi selecionado como modelo candidato principal após comparação com a Regressão Logística. A escolha considerou a Average Precision e a quantidade de alertas gerados sob uma regra experimental de recall mínimo de 85%.
+
+O limiar de classificação de 0,15 foi escolhido usando exclusivamente o conjunto de validação. No conjunto de teste separado, o modelo obteve:
+
+- **Precisão para fraudes:** 68,42%
+- **Recall para fraudes:** 89,04%
+- **F1-score para fraudes:** 0,7738
+- **Average Precision:** 0,8708
+- **ROC-AUC:** 0,9614
+
+Das 73 fraudes presentes no conjunto de teste, 65 foram detectadas e 8 não foram identificadas. O modelo gerou 95 alertas, incluindo 30 falsos positivos.
+
+Os resultados são promissores para um experimento de classificação com classes altamente desbalanceadas. Entretanto, o limiar adotado é uma decisão experimental, não uma regra validada para uma operação financeira real.
+
+### Limitações e próximos passos
+
+- Avaliar a estabilidade das métricas com diferentes partições ou validação cruzada apropriada.
+- Investigar o impacto de falsos positivos e fraudes perdidas considerando custos operacionais.
+- Avaliar a calibração das probabilidades antes de interpretá-las como riscos reais.
+- Verificar o desempenho com dados temporalmente posteriores e representativos de uma operação real.
+- Desenvolver testes automatizados, uma API de inferência e monitoramento antes de considerar qualquer implantação operacional.
+
+Este projeto tem finalidade educacional e demonstrativa. Os resultados não garantem desempenho equivalente em dados reais de instituições financeiras.
