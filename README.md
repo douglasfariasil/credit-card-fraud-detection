@@ -6,19 +6,22 @@ O projeto dá atenção especial ao desbalanceamento entre transações legítim
 
 ## Status
 
-**Etapa atual:** engenharia do pipeline de Machine Learning e testes automatizados.
+Repositório público publicado no GitHub. O projeto possui um pipeline de Machine Learning modular, testável e documentado.
 
-**Implementado:**
+Implementado:
+
 - Carregamento e validação do dataset.
-- Treinamento de modelo Random Forest.
+- Treinamento do modelo Random Forest.
 - Cálculo de métricas de classificação.
-- Análise e seleção de limiar usando validação.
+- Seleção de limiar usando dados de validação.
 - Persistência e carregamento do modelo.
 - Inferência de novas transações.
 - Testes unitários e de integração.
+- Integração contínua com GitHub Actions, executando Pytest e Ruff.
 
-**Próximas evoluções:** documentação final do experimento, publicação e, posteriormente, avaliação temporal, API de inferência e monitoramento.
+A suíte possui 59 testes automatizados aprovados. O workflow publicado no GitHub também foi executado com sucesso.
 
+Próximas evoluções: avaliação temporal, calibração de probabilidades, explicabilidade, API de inferência e monitoramento.
 ## Problema de negócio
 
 Identificar transações potencialmente fraudulentas em uma base altamente desbalanceada.
@@ -94,19 +97,23 @@ Essa meta é uma hipótese de avaliação para o projeto, não uma exigência op
 
 ## Tecnologias
 
+### Utilizadas no projeto
+
 - Python 3.13+
 - pandas e NumPy
 - scikit-learn
 - imbalanced-learn
-- XGBoost
-- SHAP
 - matplotlib e seaborn
 - joblib
 - JupyterLab
 - pytest
 - Ruff
 - Astral uv
+- Git e GitHub Actions
 
+### Dependências adicionais
+
+XGBoost e SHAP estão declarados no ambiente de dependências, mas não fazem parte dos resultados do modelo final apresentados neste experimento.
 ## Como executar
 
 ### 1. Pré-requisitos
@@ -116,7 +123,7 @@ Instale Python compatível com o `pyproject.toml` e o gerenciador de dependênci
 ### 2. Obter o projeto
 
 ```bash
-git clone <URL_DO_REPOSITORIO>
+git clone https://github.com/douglasfariasil/credit-card-fraud-detection
 cd credit-card-fraud-detection
 ```
 
@@ -205,13 +212,13 @@ A licença e os termos de uso e redistribuição ainda precisam ser confirmados.
 
 ## Próximos passos
 
-- Consolidar a documentação e publicar o repositório.
 - Avaliar estabilidade e generalização do modelo.
 - Investigar calibração de probabilidades.
 - Avaliar uma estratégia de divisão temporal.
+- Implementar análise de explicabilidade com SHAP.
 - Desenvolver uma API de inferência com FastAPI.
 - Investigar monitoramento de qualidade dos dados e drift.
-
+- Confirmar a licença e os termos de uso do dataset.
 ## Finalidade
 
 Este projeto demonstra conhecimentos de Python, análise de dados, Machine Learning, organização de código, persistência de modelos, inferência e testes automatizados.
