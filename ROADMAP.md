@@ -1,66 +1,114 @@
 # Roadmap do projeto
 
+Legenda:
+- [x] Concluído e validado.
+- [ ] Pendente ou aguardando verificação.
+
 ## Etapa 0 — Preparação
 
-- [ ] Criar repositório Git.
-- [ ] Instalar/validar `uv` e Python.
-- [ ] Criar ambiente com `uv sync`.
-- [ ] Confirmar a URL do dataset na Aula 1 da DIO.
-- [ ] Verificar licença, condições de uso, formato e tamanho do dataset.
+- [x] Criar repositório Git.
+- [x] Instalar e validar `uv` e Python.
+- [x] Criar ambiente com `uv sync`.
+- [x] Documentar a origem e a URL de referência do dataset.
+- [ ] Verificar licença e condições de uso e redistribuição do dataset.
 
-**Pronto quando:** o ambiente é reproduzível e a origem dos dados está documentada.
+**Status:** ambiente configurado e origem documentada. A verificação da licença ainda está pendente.
 
 ## Etapa 1 — Exploração
 
-- [ ] Criar `notebooks/01_exploracao_e_modelagem.ipynb`.
-- [ ] Carregar dados a partir da fonte confirmada.
-- [ ] Verificar dimensões, tipos, nulos, duplicatas e estatísticas.
-- [ ] Calcular prevalência de fraude e documentar a desproporção.
-- [ ] Criar visualizações iniciais.
+- [x] Criar `notebooks/01_exploracao_e_modelagem.ipynb`.
+- [x] Carregar dados a partir da fonte documentada.
+- [x] Verificar dimensões, tipos, valores ausentes, duplicatas e estatísticas.
+- [x] Calcular prevalência de fraude e analisar o desbalanceamento.
+- [x] Criar visualizações exploratórias.
+- [ ] Executar novamente o notebook completo, de cima para baixo, para validar a reprodução final.
 
-**Pronto quando:** o notebook executa até o fim e as saídas são verificáveis.
+**Status:** exploração e análise implementadas. A execução completa precisa ser confirmada na revisão final.
 
 ## Etapa 2 — Preparação e baseline
 
-- [ ] Definir split e justificar a estratégia considerando `Time`.
-- [ ] Criar baseline de Regressão Logística com pipeline.
-- [ ] Calcular métricas da classe fraude.
-- [ ] Inspecionar matriz de confusão e curva Precisão-Recall.
+- [x] Definir os conjuntos de treino, validação e teste.
+- [x] Implementar baseline de Regressão Logística.
+- [x] Calcular métricas da classe fraude.
+- [x] Inspecionar matriz de confusão e curva Precisão-Recall.
+- [ ] Documentar de forma explícita as limitações da estratégia de divisão em relação à variável `Time`.
 
-## Etapa 3 — Comparação
+**Status:** baseline e avaliação implementados. A estratégia temporal merece documentação adicional.
 
-- [ ] Comparar Regressão Logística, Random Forest e XGBoost.
-- [ ] Comparar pesos de classe e, quando apropriado, estratégias de reamostragem.
-- [ ] Evitar vazamento: reamostragem apenas no treino.
-- [ ] Fazer ajuste de hiperparâmetros com validação.
-- [ ] Registrar tempo de treino e trade-offs relevantes.
+## Etapa 3 — Comparação de modelos
+
+- [x] Comparar Regressão Logística e Random Forest.
+- [x] Avaliar o tratamento do desbalanceamento com pesos de classe.
+- [x] Preservar a separação entre treino, validação e teste.
+- [x] Comparar métricas e volume de alertas.
+- [ ] Registrar e comparar sistematicamente o tempo de treinamento.
+- [ ] Avaliar XGBoost como experimento adicional, caso agregue valor à comparação.
+
+**Status:** comparação principal concluída com dois modelos. XGBoost não faz parte do escopo mínimo da primeira entrega.
 
 ## Etapa 4 — Limiar e explicabilidade
 
-- [ ] Escolher limiar usando validação e um critério documentado.
-- [ ] Comparar precisão/recall em diferentes limiares.
-- [ ] Usar SHAP quando compatível com o modelo escolhido.
-- [ ] Explicar limites de interpretação das variáveis PCA.
+- [x] Escolher o limiar usando exclusivamente a validação.
+- [x] Documentar o critério experimental de recall mínimo de 85%.
+- [x] Comparar o comportamento de diferentes limiares.
+- [x] Registrar os resultados finais do Random Forest no conjunto de teste.
+- [x] Documentar limitações das variáveis e da interpretação dos resultados.
+- [ ] Avaliar SHAP como recurso adicional de explicabilidade.
+
+**Status:** seleção do limiar e avaliação final concluídas. SHAP permanece como melhoria opcional.
 
 ## Etapa 5 — Engenharia e testes
 
-- [ ] Extrair funções estáveis para `src/fraud_detection/`.
-- [ ] Adicionar testes unitários.
-- [ ] Configurar CI com GitHub Actions.
-- [ ] Confirmar que não há dados brutos ou caminhos locais no Git.
+- [x] Extrair funções reutilizáveis para `src/fraud_detection/`.
+- [x] Implementar módulos de carregamento, treinamento, avaliação, persistência e inferência.
+- [x] Adicionar testes automatizados.
+- [x] Criar teste de integração do fluxo de treinamento, persistência e inferência.
+- [x] Validar a suíte de testes: 59 testes aprovados.
+- [x] Validar qualidade do código com Ruff.
+- [x] Configurar workflow de CI com GitHub Actions.
+- [ ] Revisar a execução do workflow de CI no GitHub.
+- [ ] Confirmar que dados brutos, modelos gerados e caminhos locais não serão publicados indevidamente.
 
-## Etapa 6 — Publicação
+**Status:** implementação e testes locais concluídos. CI remoto e revisão final dos arquivos pendentes.
 
-- [ ] Executar o notebook de cima para baixo.
-- [ ] Executar `uv run pytest`.
-- [ ] Atualizar README com resultados reais.
-- [ ] Incluir gráficos essenciais e conclusões honestas.
-- [ ] Conferir arquivos e links citados.
-- [ ] Publicar repositório público no GitHub.
+## Etapa 6 — Publicação e entrega
 
-## Ideias futuras, após a entrega principal
+- [ ] Executar o notebook completo de cima para baixo.
+- [x] Executar testes automatizados localmente.
+- [x] Executar Ruff localmente.
+- [x] Atualizar README com arquitetura e resultados experimentais.
+- [x] Atualizar ARCHITECTURE.md.
+- [x] Atualizar BUSINESS_RULES.md.
+- [ ] Atualizar notebooks/README.md para refletir o notebook existente.
+- [ ] Incluir ou revisar os gráficos essenciais no README.
+- [ ] Conferir arquivos, links e referências.
+- [ ] Revisar `git status` e o diff completo.
+- [ ] Confirmar a configuração do repositório remoto.
+- [ ] Publicar a versão final no GitHub.
+- [ ] Preparar a descrição e os materiais para entrega à DIO.
+
+**Status:** documentação principal revisada. Revisão final, publicação e entrega ainda pendentes.
+
+## Melhorias futuras — Após a primeira entrega
 
 - [ ] Avaliação temporal mais realista.
 - [ ] API de inferência com FastAPI.
 - [ ] Monitoramento de drift e qualidade dos dados.
-- [ ] Relatório de desempenho e custos de falsos positivos/falsos negativos.
+- [ ] Avaliação de calibração das probabilidades.
+- [ ] Análise de custos de falsos positivos e falsos negativos.
+- [ ] Avaliação adicional com XGBoost e SHAP, se justificável.
+- [ ] Melhorias de segurança, disponibilidade e rastreabilidade.
+
+## Critério de conclusão do projeto
+
+A primeira versão será considerada pronta para apresentação quando:
+
+1. O notebook executar integralmente.
+2. Os testes automatizados passarem.
+3. O Ruff não apresentar problemas.
+4. A documentação corresponder ao código implementado.
+5. A origem e as condições de uso dos dados estiverem documentadas.
+6. Não houver dados sensíveis, arquivos locais ou artefatos indevidos no repositório.
+7. O projeto estiver publicado e acessível no GitHub.
+
+A conclusão desta primeira versão não significa que o projeto esteja pronto para produção. Significa que existe uma implementação educacional reproduzível, testada, documentada e adequada para demonstrar competências de engenharia de dados e Machine Learning.

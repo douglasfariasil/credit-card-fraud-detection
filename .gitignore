@@ -8,3 +8,24 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Datasets locais
+data/raw/*
+!data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Modelos e artefatos treinados
+*.joblib
+*.pkl
+*.pickle
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Configurações locais do VS Code
+.vscode/

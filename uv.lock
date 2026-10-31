@@ -466,6 +466,7 @@ source = { editable = "." }
 dependencies = [
     { name = "imbalanced-learn" },
     { name = "ipykernel" },
+    { name = "joblib" },
     { name = "jupyterlab" },
     { name = "matplotlib" },
     { name = "numpy" },
@@ -486,6 +487,7 @@ dev = [
 requires-dist = [
     { name = "imbalanced-learn" },
     { name = "ipykernel" },
+    { name = "joblib", specifier = ">=1.6.0" },
     { name = "jupyterlab" },
     { name = "matplotlib" },
     { name = "numpy" },

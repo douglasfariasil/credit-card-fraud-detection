@@ -1,124 +1,172 @@
 # Regras de negócio e critérios de avaliação
 
-## Contexto
+## 1. Contexto
 
-O problema é classificar transações como legítimas ou fraudulentas. O desafio informa que a classe positiva é rara (aproximadamente 0,17% no conjunto descrito); essa proporção deve ser recalculada no dataset real, não presumida como verdade universal.
+O objetivo do projeto é classificar transações financeiras como legítimas ou fraudulentas.
 
-## Definição do alvo
+O principal desafio é o desbalanceamento entre as classes: a quantidade de transações fraudulentas é muito menor que a de transações normais. O conjunto de dados descrito no desafio apresenta aproximadamente 0,17% de fraudes. Essa proporção deve ser calculada no dataset efetivamente utilizado, não presumida como uma característica universal.
 
-- `Class = 1`: fraude, conforme a descrição do desafio.
+## 2. Definição do alvo
+
+- `Class = 1`: transação fraudulenta.
 - `Class = 0`: transação normal.
-- Confirmar valores e tipos ao carregar a base. Não inverter a classe positiva sem documentar.
+- Confirmar os valores e tipos da variável-alvo durante o carregamento dos dados.
+- Não inverter a classe positiva sem documentar a decisão.
 
-## Por que acurácia não basta
+## 3. Por que acurácia não basta
 
-Quando quase todas as transações são normais, prever sempre “normal” pode gerar acurácia alta e recall de fraude igual a zero. Portanto, a acurácia será contextual, nunca a única métrica de seleção.
+Em um conjunto altamente desbalanceado, um modelo pode prever todas as transações como normais e ainda apresentar uma acurácia elevada, mesmo sem identificar nenhuma fraude.
 
-## Métricas obrigatórias
+Por isso, a acurácia será utilizada apenas como informação complementar, nunca como único critério de seleção do modelo.
 
-- **Recall da fraude:** fraudes identificadas / todas as fraudes reais.
-- **Precisão da fraude:** fraudes verdadeiras identificadas / todas as transações marcadas como fraude.
-- **F1 da fraude:** média harmônica entre precisão e recall.
-- **Matriz de confusão:** para explicitar verdadeiros positivos, falsos positivos, verdadeiros negativos e falsos negativos.
-- **Curva Precisão-Recall:** especialmente informativa quando a classe positiva é rara.
-- **ROC-AUC:** útil como visão complementar, mas não substitui métricas no limiar operacional.
+## 4. Métricas de avaliação
 
-## Trade-offs operacionais
+As seguintes métricas devem orientar a avaliação:
 
-- Falso negativo: fraude não detectada.
-- Falso positivo: transação legítima sinalizada como fraude.
-- Um limiar menor geralmente aumenta recall e também pode aumentar falsos positivos.
-- O projeto não conhece o custo financeiro real de cada erro; não alegar otimização de custo sem definir esses valores.
+- **Recall da fraude:** proporção de fraudes reais identificadas pelo modelo.
+- **Precisão da fraude:** proporção de alertas de fraude que realmente correspondem a fraudes.
+- **F1-score da fraude:** média harmônica entre precisão e recall.
+- **Matriz de confusão:** permite identificar verdadeiros positivos, falsos positivos, verdadeiros negativos e falsos negativos.
+- **Average Precision e curva Precisão-Recall:** importantes para avaliar modelos em problemas com classe positiva rara.
+- **ROC-AUC:** métrica complementar para avaliar a capacidade de discriminação do modelo.
 
-## Regras contra vazamento
+As métricas devem ser interpretadas em conjunto. Nenhuma delas, isoladamente, representa a qualidade operacional de um sistema antifraude.
 
-1. Separar os conjuntos antes de ajustar transformações.
-2. Ajustar o `StandardScaler` somente no treino, via pipeline.
-3. Aplicar reamostragem apenas ao treino, idealmente dentro de `imblearn.pipeline.Pipeline`.
-4. Usar validação para comparar modelos e escolher limiar.
-5. Usar o teste reservado apenas para a avaliação final.
-6. Não selecionar atributos nem ajustar hiperparâmetros olhando repetidamente para o teste.
+## 5. Trade-offs operacionais
 
-## Critérios para considerar um experimento completo
+- **Falso negativo:** uma fraude real não é identificada.
+- **Falso positivo:** uma transação legítima é sinalizada como suspeita.
+- Um limiar de classificação menor tende a aumentar o recall, mas também pode aumentar a quantidade de falsos positivos.
+- Um limiar maior tende a reduzir os alertas, mas pode deixar mais fraudes sem identificação.
+
+O projeto não possui informações sobre os custos financeiros reais de cada tipo de erro. Portanto, não deve afirmar que o modelo minimiza custos financeiros ou representa uma política operacional validada.
+
+## 6. Regras contra vazamento de dados
+
+1. Separar treino, validação e teste antes de ajustar transformações ou treinar modelos.
+2. Quando houver transformações que aprendam parâmetros dos dados, ajustá-las somente com o conjunto de treino.
+3. Se houver reamostragem, aplicá-la somente ao treino, preferencialmente dentro de um pipeline apropriado.
+4. Utilizar validação para comparar modelos e selecionar o limiar de classificação.
+5. Manter o conjunto de teste reservado para a avaliação final.
+6. Não selecionar atributos nem ajustar hiperparâmetros consultando repetidamente os resultados do teste.
+7. Preservar a separação entre as etapas experimentais e a avaliação final.
+
+## 7. Critérios para considerar um experimento completo
+
+Um experimento deve apresentar:
 
 - Dataset e fonte identificados.
-- Distribuição da classe calculada e registrada.
-- Baseline simples incluído.
-- Comparação de modelos com as mesmas divisões de dados.
-- Precisão, recall e F1 da classe fraude reportados.
+- Distribuição das classes calculada.
+- Baseline documentado.
+- Comparação de modelos com divisões de dados consistentes.
+- Precisão, recall e F1-score da classe fraude.
+- Métricas complementares adequadas ao desbalanceamento.
 - Limiar escolhido com justificativa.
 - Limitações e possíveis vieses descritos.
-- Resultados reproduzíveis, com sementes e versões registradas.
+- Resultados reproduzíveis, com sementes e versões das dependências registradas.
 
-## Decisão sobre duplicatas — análise exploratória
+## 8. Decisão sobre duplicatas — análise exploratória
 
-A base original contém 284.807 linhas, incluindo 492 fraudes. A verificação identificou 1.081 ocorrências repetidas após a primeira ocorrência e 1.854 linhas pertencentes a grupos de duplicatas exatas.
+A base original contém 284.807 linhas, incluindo 492 fraudes.
 
-Ao remover as ocorrências repetidas, o conjunto passa a conter 283.726 linhas e 473 fraudes. Portanto, 19 fraudes seriam removidas, equivalentes a aproximadamente 3,86% dos casos fraudulentos originais.
+A análise identificou:
 
-A inspeção não encontrou grupos com atributos idênticos e rótulos conflitantes.
+- 1.081 ocorrências repetidas após a primeira ocorrência.
+- 1.854 linhas pertencentes a grupos de duplicatas exatas.
+- Nenhum grupo identificado com atributos idênticos e rótulos conflitantes.
 
-**Decisão inicial:** manter a base original como cenário principal. A remoção de duplicatas será tratada como análise de sensibilidade, pois não há evidência suficiente para afirmar que todas as ocorrências repetidas sejam erros.
+Ao remover as ocorrências repetidas, o conjunto passa a conter 283.726 linhas e 473 fraudes. Isso representa a remoção de 19 fraudes, aproximadamente 3,86% dos casos fraudulentos originais.
 
-**Cuidados:** preservar os dados brutos, evitar vazamento entre conjuntos e documentar a estratégia de divisão antes de treinar modelos.
+**Decisão:** manter a base original como cenário principal. A remoção de duplicatas será tratada como análise de sensibilidade, pois não há evidência suficiente para afirmar que todas as ocorrências repetidas sejam erros.
 
-**Status:** decisão inicial, sujeita a revisão após a avaliação experimental.
+**Cuidados:**
+- Preservar os dados brutos.
+- Evitar vazamento entre os conjuntos.
+- Documentar a estratégia de divisão antes do treinamento.
+- Não interpretar duplicatas automaticamente como registros inválidos.
 
+**Status:** decisão experimental inicial, sujeita a revisão.
 
-### Regra experimental para seleção do limiar
+## 9. Histórico experimental — Regressão Logística
 
-**Objetivo:** reduzir o volume de alertas sem deixar o recall de fraude abaixo da meta definida para o experimento.
+A Regressão Logística foi utilizada como modelo de referência na comparação experimental.
 
-- Meta inicial de recall: pelo menos 85% na validação.
-- Critério de desempate: minimizar o total de alertas.
-- Modelo avaliado: regressão logística com `class_weight="balanced"`.
-- Resultado observado: o limiar 0,95 atende à meta e gera 166 alertas, detectando 64 das 75 fraudes na validação.
-- Limitação: essa meta é uma hipótese experimental, não um requisito validado com uma instituição financeira.
-- Controle de avaliação: o conjunto de teste permanece reservado até que o modelo e o limiar sejam definidos.
+A regra adotada para a seleção do limiar foi manter recall de fraude de pelo menos 85% na validação e minimizar o número total de alertas entre os limiares elegíveis.
 
-A escolha será reavaliada após a comparação com outros modelos e a análise dos custos de falsos positivos e falsos negativos.
+**Resultado observado na validação:**
 
-
-### Seleção do limiar — Regressão Logística
-
-**Regra experimental:** manter recall de fraude de pelo menos 85% na validação e minimizar o número total de alertas entre os limiares elegíveis.
-
-**Resultado:** limiar candidato de 0,95.
-
+- Modelo: Regressão Logística com `class_weight="balanced"`.
+- Limiar candidato: 0,95.
 - Recall: 85,33%.
 - Precisão: 38,55%.
 - Fraudes detectadas: 64 de 75.
-- Fraudes perdidas: 11.
+- Fraudes não identificadas: 11.
 - Falsos positivos: 102.
 - Total de alertas: 166.
 
-**Limitação:** a meta de recall é uma hipótese experimental para o portfólio. O limiar deverá ser avaliado em conjunto com outros modelos e, posteriormente, no conjunto de teste reservado.
+Esse resultado pertence a um experimento anterior e deve ser interpretado como referência histórica para a comparação com outros modelos.
 
-A seleção não deve ser interpretada como uma política operacional validada para uma instituição financeira.
+A meta de recall de 85% é uma hipótese experimental para o portfólio, não um requisito validado com uma instituição financeira.
 
+O conjunto de teste permaneceu reservado para a avaliação final.
 
-## Conclusão e limitações
+## 10. Seleção do modelo e do limiar final — Random Forest
 
-O Random Forest foi selecionado como modelo candidato principal após comparação com a Regressão Logística. A escolha considerou a Average Precision e a quantidade de alertas gerados sob uma regra experimental de recall mínimo de 85%.
+Após a comparação experimental com a Regressão Logística, o Random Forest foi selecionado como modelo candidato principal.
 
-O limiar de classificação de 0,15 foi escolhido usando exclusivamente o conjunto de validação. No conjunto de teste separado, o modelo obteve:
+A decisão considerou a Average Precision e a quantidade de alertas gerados sob a regra experimental de recall mínimo de 85%.
 
-- **Precisão para fraudes:** 68,42%
-- **Recall para fraudes:** 89,04%
-- **F1-score para fraudes:** 0,7738
-- **Average Precision:** 0,8708
-- **ROC-AUC:** 0,9614
+O limiar de classificação escolhido foi **0,15**, utilizando exclusivamente o conjunto de validação.
 
-Das 73 fraudes presentes no conjunto de teste, 65 foram detectadas e 8 não foram identificadas. O modelo gerou 95 alertas, incluindo 30 falsos positivos.
+A escolha buscou atender à meta experimental de recall e minimizar o volume de alertas entre os limiares avaliados.
 
-Os resultados são promissores para um experimento de classificação com classes altamente desbalanceadas. Entretanto, o limiar adotado é uma decisão experimental, não uma regra validada para uma operação financeira real.
+### Avaliação final no conjunto de teste
 
-### Limitações e próximos passos
+O modelo foi avaliado no conjunto de teste separado, sem utilizar esse conjunto para escolher o limiar.
+
+| Métrica | Resultado |
+|---|---:|
+| Precisão da fraude | 68,42% |
+| Recall da fraude | 89,04% |
+| F1-score da fraude | 0,7738 |
+| Average Precision | 0,8708 |
+| ROC-AUC | 0,9614 |
+| Limiar utilizado | 0,15 |
+
+### Resultado operacional observado no teste
+
+Das 42.720 transações avaliadas:
+
+- Fraudes reais: 73.
+- Fraudes detectadas: 65.
+- Fraudes não identificadas: 8.
+- Falsos positivos: 30.
+- Total de alertas: 95.
+- Transações classificadas como normais: 42.625.
+
+Matriz de confusão:
+
+| | Previsto normal | Previsto fraude |
+|---|---:|---:|
+| Real normal | 42.617 | 30 |
+| Real fraude | 8 | 65 |
+
+Os resultados demonstram o comportamento do modelo nesse conjunto de teste específico. Não garantem desempenho equivalente em outros períodos, bases de dados ou instituições financeiras.
+
+## 11. Limitações e próximos passos
+
+O projeto tem finalidade educacional e demonstrativa. O modelo ainda não representa um sistema antifraude pronto para produção.
+
+Pontos que podem evoluir:
 
 - Avaliar a estabilidade das métricas com diferentes partições ou validação cruzada apropriada.
-- Investigar o impacto de falsos positivos e fraudes perdidas considerando custos operacionais.
+- Investigar o impacto financeiro e operacional dos falsos positivos e falsos negativos.
 - Avaliar a calibração das probabilidades antes de interpretá-las como riscos reais.
 - Verificar o desempenho com dados temporalmente posteriores e representativos de uma operação real.
-- Desenvolver testes automatizados, uma API de inferência e monitoramento antes de considerar qualquer implantação operacional.
+- Desenvolver uma API de inferência.
+- Implementar monitoramento de desempenho e mudanças na distribuição dos dados.
+- Avaliar requisitos adicionais de segurança, disponibilidade e rastreabilidade antes de qualquer implantação operacional.
 
-Este projeto tem finalidade educacional e demonstrativa. Os resultados não garantem desempenho equivalente em dados reais de instituições financeiras.
+**Status de engenharia:** o projeto já possui módulos reutilizáveis para carregamento, treinamento, avaliação, persistência e inferência, além de testes automatizados para validar o fluxo de treinamento, persistência e inferência. A API e o monitoramento permanecem como etapas futuras.
+
+**Conclusão:** o Random Forest, com limiar de 0,15, é o modelo candidato selecionado neste experimento. Sua avaliação final apresentou recall de 89,04% e precisão de 68,42% para a classe fraude no conjunto de teste. A decisão é experimental e não deve ser interpretada como uma política financeira validada.

@@ -7,6 +7,7 @@ requires-python = ">=3.13"
 dependencies = [
     "imbalanced-learn",
     "ipykernel",
+    "joblib>=1.6.0",
     "jupyterlab",
     "matplotlib",
     "numpy",

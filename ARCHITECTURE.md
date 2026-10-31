@@ -1,91 +1,172 @@
-# Arquitetura
+# Arquitetura do Projeto
 
 ## 1. Objetivo
 
-Organizar o projeto em duas camadas complementares: notebook para exploração e comunicação dos experimentos; pacote Python para lógica reutilizável, testável e independente da interface.
+O projeto organiza o desenvolvimento de um sistema experimental de detecção de fraudes em transações com cartão de crédito.
 
-## 2. Visão inicial
+A arquitetura separa duas responsabilidades:
+
+- **Notebook:** exploração dos dados, experimentos, visualizações e apresentação dos resultados.
+- **Pacote Python:** implementação de funções reutilizáveis, testáveis e independentes do notebook.
+
+O objetivo é manter o código de Machine Learning organizado, facilitar sua manutenção e permitir a evolução futura para serviços de inferência.
+
+## 2. Visão geral do fluxo
 
 ```text
-Fonte de dados confirmada
-        |
-        v
+Dataset
+   |
+   v
 Carregamento e validação
-        |
-        v
-Exploração / qualidade dos dados
-        |
-        v
+   |
+   v
+Exploração dos dados
+   |
+   v
 Separação treino / validação / teste
-        |
-        v
-Pré-processamento dentro de Pipeline
-        |
-        v
-Treino e comparação de modelos
-        |
-        v
-Escolha do limiar na validação
-        |
-        v
-Avaliação final no teste
-        |
-        v
-Explicabilidade + relatório
+   |
+   v
+Treinamento do Random Forest
+   |
+   v
+Avaliação na validação
+   |
+   v
+Seleção do limiar de classificação
+   |
+   v
+Persistência do modelo e configuração
+   |
+   v
+Carregamento do artefato
+   |
+   v
+Inferência de novas transações
+   |
+   v
+Avaliação final no conjunto de teste
 ```
 
-## 3. Estrutura de módulos
+O conjunto de teste permanece reservado para a avaliação final. A seleção do limiar é realizada exclusivamente com os dados de validação.
 
-- `src/fraud_detection/data/`: leitura, validação de esquema e verificações básicas de qualidade.
-- `src/fraud_detection/features/`: transformações e construção de atributos.
-- `src/fraud_detection/models/`: criação de pipelines e configuração de estimadores.
-- `src/fraud_detection/evaluation/`: métricas, matrizes de confusão e escolha/avaliação de limiar.
-- `notebooks/`: narrativa experimental, tabelas e gráficos com saídas verificáveis.
-- `tests/`: testes unitários das funções reutilizáveis.
-- `reports/figures/`: figuras selecionadas para documentação; não armazenar grandes artefatos desnecessários.
-- `.github/workflows/`: verificações automatizadas básicas.
+## 3. Organização dos módulos
 
-## 4. Fluxo de dados
+### `src/fraud_detection/data/`
 
-1. Obter a base a partir da fonte indicada na Aula 1 da DIO.
-2. Guardar o arquivo localmente fora do controle de versão, salvo se houver uma razão e permissão explícitas para outra abordagem.
-3. Validar colunas esperadas, tipos, valores ausentes, duplicatas e distribuição do alvo.
-4. Separar os dados antes de aprender parâmetros de pré-processamento.
-5. Treinar candidatos usando pipelines; qualquer reamostragem deve ocorrer apenas dentro do treino.
-6. Selecionar modelo e limiar com validação.
-7. Avaliar uma única vez no teste reservado e registrar limitações.
+Responsável pelo carregamento e pela validação estrutural dos dados.
 
-## 5. Decisões importantes
+- `loader.py`: verifica a existência do arquivo, extensão, esquema esperado, valores ausentes, valores finitos e domínio da variável-alvo.
 
-### Notebook primeiro
+### `src/fraud_detection/evaluation/`
 
-A primeira entrega será `notebooks/01_exploracao_e_modelagem.ipynb`, pois o desafio pede um notebook completo. A lógica que amadurecer e precisar de testes será movida para `src/`.
+Responsável pela avaliação dos modelos e pela análise de limiares.
 
-### Desbalanceamento
+- `metrics.py`: calcula métricas de classificação, relatório, matriz de confusão, Average Precision e ROC-AUC.
+- `thresholds.py`: analisa diferentes limiares e seleciona candidatos conforme os critérios experimentais.
 
-Não se deve balancear o conjunto inteiro antes do split. Oversampling e undersampling serão comparados apenas no conjunto de treino ou dentro de validação cruzada, evitando vazamento.
+### `src/fraud_detection/models/`
 
-### Métricas e limiar
+Responsável pelo treinamento, armazenamento e inferência.
 
-A seleção do limiar depende do objetivo operacional. Recall alto pode aumentar falsos positivos; precisão alta pode deixar passar fraudes. O projeto deve mostrar esse trade-off e não afirmar que existe um limiar universalmente correto.
+- `training.py`: configura e treina o Random Forest.
+- `persistence.py`: salva e carrega o modelo junto com o limiar e os nomes das colunas de entrada.
+- `inference.py`: valida novas entradas, calcula probabilidades e produz as decisões de classificação.
 
-### Split aleatório versus temporal
+### `src/fraud_detection/features/`
 
-O desafio sugere `train_test_split(..., stratify=y)`. Como existe uma coluna `Time`, vamos verificar sua semântica e a ordenação dos dados antes de decidir. O split estratificado pode ser usado para reproduzir o exercício, mas a limitação de não representar uma implantação futura deve ser documentada. Se adequado, uma análise temporal será uma evolução separada.
+Espaço reservado para futuras transformações e construção de atributos. Não representa, neste momento, um pipeline independente de engenharia de atributos.
 
-### Explicabilidade
+### `notebooks/`
 
-Importância de atributos e SHAP serão usados para entender o comportamento do modelo. As colunas `V1`–`V28` foram transformadas por PCA segundo a descrição do desafio; portanto, não se deve atribuir a elas um significado de negócio que não foi fornecido.
+Contém os experimentos, análises, visualizações e resultados utilizados para desenvolver e documentar o modelo.
 
-## 6. Ambiente e reprodução
+### `tests/`
 
-- Gerenciamento de dependências: Astral `uv`.
-- Ambiente virtual: `.venv/`, ignorado pelo Git.
-- Dependências e metadados: `pyproject.toml`.
-- Lockfile: `uv.lock`, gerado e versionado após resolver dependências.
-- Testes: `pytest`.
-- Controle de versão: Git/GitHub.
+Contém testes automatizados para validação dos módulos e do fluxo integrado de treinamento, persistência e inferência.
 
-## 7. Fora do escopo inicial
+### `reports/figures/`
 
-API de produção, serviço online, banco transacional, monitoramento operacional e bloqueio real de cartões. Essas extensões só serão consideradas após o experimento offline estar validado.
+Diretório destinado às figuras selecionadas para documentação e apresentação dos resultados.
+
+## 4. Responsabilidades e fluxo de dados
+
+1. Carregar o dataset e validar sua estrutura.
+2. Explorar a distribuição das classes e as características dos dados.
+3. Separar treino, validação e teste.
+4. Treinar o modelo usando somente os dados de treinamento.
+5. Calcular probabilidades e avaliar candidatos na validação.
+6. Selecionar o limiar de classificação usando o critério experimental definido.
+7. Salvar o modelo treinado, o limiar e as colunas esperadas.
+8. Carregar o artefato para realizar inferência.
+9. Avaliar o desempenho final no conjunto de teste.
+
+## 5. Persistência do modelo
+
+A persistência utiliza `joblib`.
+
+O artefato contém:
+
+- Modelo treinado.
+- Limiar de classificação.
+- Nomes e ordem das colunas esperadas na entrada.
+
+O arquivo é armazenado localmente em:
+
+`artifacts/models/random_forest.joblib`
+
+Os artefatos treinados não devem ser versionados no Git.
+
+**Segurança:** arquivos serializados com joblib podem executar código durante o carregamento. Portanto, somente artefatos de origem confiável devem ser carregados.
+
+## 6. Inferência
+
+A função `prever_transacoes` recebe um DataFrame com as variáveis de entrada e um artefato carregado.
+
+Antes de realizar as previsões, valida:
+
+- Tipo do objeto recebido.
+- Presença de registros.
+- Colunas obrigatórias e ausência de colunas extras.
+- Conversibilidade dos valores para formato numérico.
+- Ausência de valores nulos e infinitos.
+
+O resultado contém:
+
+- `probabilidade_fraude`
+- `classe_prevista`
+- `decisao`
+
+A decisão utiliza o limiar armazenado no artefato, evitando depender de um valor definido separadamente durante a inferência.
+
+## 7. Testes e qualidade
+
+O projeto utiliza:
+
+- `pytest` para testes unitários e de integração.
+- `ruff` para análise estática e qualidade do código.
+- `git diff --check` para verificar problemas de whitespace nas alterações.
+
+Na última execução validada, a suíte apresentou 59 testes aprovados e o Ruff não encontrou erros.
+
+## 8. Ambiente e dependências
+
+- Python 3.13 ou superior.
+- Astral `uv` para gerenciamento de dependências.
+- `pyproject.toml` para configuração do projeto.
+- `uv.lock` para reprodutibilidade das dependências.
+- Git para controle de versão.
+
+## 9. Limitações e evoluções futuras
+
+O projeto é um experimento educacional e não constitui um sistema de detecção de fraude pronto para produção.
+
+Não fazem parte da implementação atual:
+
+- API de inferência com FastAPI.
+- Banco de dados transacional.
+- Monitoramento de modelos em produção.
+- Detecção de drift.
+- Bloqueio automático de transações.
+- Integração com instituições financeiras.
+
+Essas funcionalidades poderão ser consideradas em etapas futuras, após a validação do fluxo offline e de seus resultados.

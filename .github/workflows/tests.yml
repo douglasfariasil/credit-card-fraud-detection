@@ -1,0 +1,37 @@
+name: Testes e qualidade do código
+
+on:
+    push:
+    pull_request:
+
+permissions:
+    contents: read
+
+jobs:
+    tests:
+        name: Testes e Ruff
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Baixar código
+              uses: actions/checkout@v4
+
+            - name: Configurar Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.13"
+
+            - name: Instalar uv
+              uses: astral-sh/setup-uv@v6
+              with:
+                  enable-cache: true
+                  cache-dependency-glob: uv.lock
+
+            - name: Instalar dependências
+              run: uv sync --locked
+
+            - name: Executar testes
+              run: uv run pytest -q
+
+            - name: Verificar qualidade do código
+              run: uv run ruff check .

@@ -1,80 +1,219 @@
 # Credit Card Fraud Detection
 
-Projeto de portfólio para estudar detecção de fraude em transações com cartão de crédito, com foco em avaliação correta de dados altamente desbalanceados, explicabilidade e reprodutibilidade.
+Projeto de engenharia de Machine Learning para detecção de fraudes em transações com cartão de crédito. O objetivo é desenvolver um fluxo reproduzível, testável e organizado, desde a validação dos dados até a inferência com um modelo persistido.
 
-> **Status:** estrutura inicial. O dataset ainda precisa ser confirmado a partir da Aula 1 do laboratório da DIO. Não coloque dados privados ou o arquivo bruto no Git.
+O projeto dá atenção especial ao desbalanceamento entre transações legítimas e fraudulentas, à prevenção de vazamento de dados e à escolha de um limiar de classificação orientado por métricas.
 
-## Objetivos
+## Status
 
-- Explorar os dados e entender a prevalência de fraude.
-- Criar um baseline com Regressão Logística e compará-lo com Random Forest e XGBoost.
-- Avaliar a classe fraude com precisão, recall, F1 e curvas ROC/Precisão-Recall.
-- Escolher o limiar de decisão com base em custos e objetivos explícitos, não apenas no padrão 0,5.
-- Investigar explicações globais e locais com SHAP, quando apropriado.
-- Tornar os experimentos reproduzíveis e documentar limitações.
+**Etapa atual:** engenharia do pipeline de Machine Learning e testes automatizados.
+
+**Implementado:**
+- Carregamento e validação do dataset.
+- Treinamento de modelo Random Forest.
+- Cálculo de métricas de classificação.
+- Análise e seleção de limiar usando validação.
+- Persistência e carregamento do modelo.
+- Inferência de novas transações.
+- Testes unitários e de integração.
+
+**Próximas evoluções:** documentação final do experimento, publicação e, posteriormente, avaliação temporal, API de inferência e monitoramento.
+
+## Problema de negócio
+
+Identificar transações potencialmente fraudulentas em uma base altamente desbalanceada.
+
+Nesse cenário, a acurácia isolada pode ser enganosa: um modelo pode classificar quase todas as transações como legítimas e ainda apresentar acurácia elevada, deixando de detectar fraudes.
+
+Por isso, a avaliação considera principalmente:
+
+- **Precisão:** proporção dos alertas que realmente são fraudes.
+- **Recall:** proporção das fraudes reais que foram identificadas.
+- **F1-score:** equilíbrio entre precisão e recall.
+- **Matriz de confusão:** distribuição de acertos e erros.
+- **Average Precision:** desempenho resumido da curva Precisão-Recall.
+- **ROC-AUC:** métrica complementar de discriminação.
+
+## Resultado experimental
+
+<text>Modelo selecionado: Random Forest</text>
+
+<text>Limiar de classificação: 0,15, selecionado com dados de validação.</text>
+
+| Métrica no teste | Resultado |
+|---|---:|
+| Precisão da fraude | 68,42% |
+| Recall da fraude | 89,04% |
+| F1-score da fraude | 0,7738 |
+| Average Precision | 0,8708 |
+| ROC-AUC | 0,9614 |
+
+### Matriz de confusão
+
+| | Previsto normal | Previsto fraude |
+|---|---:|---:|
+| Real normal | 42.617 | 30 |
+| Real fraude | 8 | 65 |
+
+No conjunto de teste, o modelo identificou 65 das 73 fraudes, deixou 8 passar e gerou 95 alertas, dos quais 30 eram falsos positivos.
+
+Esses resultados representam o experimento atual e não garantem desempenho equivalente em dados de produção.
+
+## Arquitetura
+
+O projeto separa a exploração experimental da lógica reutilizável:
+
+- `notebooks/`: exploração, experimentos, visualizações e comunicação dos resultados.
+- `src/fraud_detection/data/`: carregamento e validação dos dados.
+- `src/fraud_detection/evaluation/`: métricas e análise de limiares.
+- `src/fraud_detection/models/`: treinamento, persistência e inferência.
+- `src/fraud_detection/features/`: espaço reservado para futuras transformações de atributos.
+- `tests/`: testes automatizados dos módulos e do pipeline.
+
+A organização segue o princípio de manter no pacote Python a lógica que precisa ser reutilizada e testada, deixando o notebook responsável pela narrativa experimental.
+
+Consulte também:
+- `ARCHITECTURE.md`: decisões e fluxo da arquitetura.
+- `BUSINESS_RULES.md`: regras de negócio e critérios experimentais.
+- `ROADMAP.md`: etapas e evoluções planejadas.
+- `data/README.md`: fonte e informações do dataset.
+
+## Regras contra vazamento de dados
+
+A avaliação segue estas regras:
+
+1. Separar treino, validação e teste antes de ajustar transformações.
+2. Treinar o modelo somente com os dados de treinamento.
+3. Usar validação para comparar modelos e selecionar o limiar.
+4. Manter o conjunto de teste reservado para a avaliação final.
+5. Não ajustar o limiar com base nos resultados do teste.
+
+A meta experimental de recall mínimo é de 85%. Entre os limiares que atendem a essa meta na validação, busca-se minimizar a quantidade de alertas.
+
+Essa meta é uma hipótese de avaliação para o projeto, não uma exigência operacional validada por uma instituição financeira.
 
 ## Tecnologias
 
-Python, pandas, NumPy, scikit-learn, imbalanced-learn, XGBoost, SHAP, Jupyter, matplotlib, seaborn, pytest e Astral uv.
+- Python 3.13+
+- pandas e NumPy
+- scikit-learn
+- imbalanced-learn
+- XGBoost
+- SHAP
+- matplotlib e seaborn
+- joblib
+- JupyterLab
+- pytest
+- Ruff
+- Astral uv
 
-## Começar
+## Como executar
 
-Pré-requisitos: Python compatível com o `pyproject.toml` e `uv` instalado.
+### 1. Pré-requisitos
+
+Instale Python compatível com o `pyproject.toml` e o gerenciador de dependências `uv`.
+
+### 2. Obter o projeto
+
+```bash
+git clone <URL_DO_REPOSITORIO>
+cd credit-card-fraud-detection
+```
+
+Substitua `<URL_DO_REPOSITORIO>` pelo endereço do repositório publicado.
+
+### 3. Instalar dependências
 
 ```bash
 uv sync
-uv run python -c "import pandas, sklearn; print('Ambiente pronto')"
+```
+
+### 4. Preparar os dados
+
+Consulte `data/README.md` para obter a referência do dataset e as instruções relacionadas à sua origem.
+
+Os arquivos brutos não devem ser adicionados ao Git.
+
+### 5. Executar o notebook
+
+```bash
 uv run jupyter lab
 ```
 
-Se ainda não existir `uv.lock`, gere-o localmente com `uv lock` e versione o arquivo.
+Abra `notebooks/01_exploracao_e_modelagem.ipynb` e execute as células em ordem.
 
-## Estrutura
+### 6. Executar os testes
 
-```text
-.
-├── AGENTS.md
-├── ARCHITECTURE.md
-├── BUSINESS_RULES.md
-├── ROADMAP.md
-├── README.md
-├── pyproject.toml
-├── data/
-│   └── README.md
-├── notebooks/
-│   └── README.md
-├── reports/
-│   └── figures/
-├── src/
-│   └── fraud_detection/
-│       ├── __init__.py
-│       ├── data/
-│       ├── evaluation/
-│       ├── features/
-│       └── models/
-├── tests/
-└── .github/workflows/
-    └── tests.yml
+```bash
+uv run pytest -q
 ```
 
-## Princípios de avaliação
+### 7. Verificar qualidade do código
 
-A acurácia não será a métrica principal porque a classe fraude é rara. Recall, precisão, F1, matriz de confusão e curva Precisão-Recall serão analisados em conjunto. Métricas de teste só serão usadas para avaliação final; decisões de modelo e limiar devem ser feitas com validação, sem ajustar decisões ao conjunto de teste.
+```bash
+uv run ruff check .
+git diff --check
+```
+
+No estado atual da suíte, foram aprovados 59 testes automatizados.
+
+## Persistência e inferência
+
+O projeto permite salvar e carregar um artefato contendo:
+
+- Modelo treinado.
+- Limiar de classificação selecionado.
+- Nomes e ordem das colunas de entrada.
+
+A função de inferência valida o esquema, os valores numéricos e a presença de valores finitos antes de produzir os resultados.
+
+As saídas incluem:
+
+- `probabilidade_fraude`
+- `classe_prevista`
+- `decisao`
+
+A decisão pode ser `ALERTA` ou `NORMAL`, conforme a probabilidade estimada e o limiar armazenado.
+
+Os artefatos `.joblib` são arquivos locais e não devem ser carregados quando sua origem não for confiável.
 
 ## Dataset
 
-Consulte `data/README.md`. O link e a licença/termos de uso precisam ser confirmados no material da Aula 1. O dataset não deve ser commitado.
+O arquivo utilizado no laboratório é `creditcard.csv`.
 
-## Como reproduzir
+A referência indicada na Aula 1 da DIO é:
 
-Depois de confirmar a fonte e implementar o notebook:
+https://storage.googleapis.com/download.tensorflow.org/data/creditcard.csv
 
-1. Clone o repositório.
-2. Execute `uv sync`.
-3. Abra a pasta no VS Code e selecione o interpretador `.venv`.
-4. Execute o notebook `notebooks/01_exploracao_e_modelagem.ipynb` de cima para baixo.
-5. Execute `uv run pytest`.
+A base contém as colunas `Time`, `Amount`, `V1` a `V28` e `Class`.
+
+- `Class = 1`: fraude.
+- `Class = 0`: transação normal.
+- `V1` a `V28`: atributos transformados por PCA, conforme a descrição tradicional da base.
+
+A licença e os termos de uso e redistribuição ainda precisam ser confirmados. Consulte `data/README.md` antes de redistribuir o dataset.
 
 ## Limitações
 
-Este é um projeto educacional, não um sistema pronto para bloquear transações reais. Os dados descritos no desafio incluem `Time`, `Amount`, `Class` e `V1`–`V28`; a semântica das variáveis PCA é limitada. Resultados dependem da versão e origem exatas do dataset.
+- O projeto tem finalidade educacional e demonstrativa.
+- O limiar escolhido não representa uma política operacional validada.
+- Os custos financeiros de falsos positivos e falsos negativos não foram definidos.
+- A calibração das probabilidades ainda precisa ser investigada.
+- A avaliação temporal e a estabilidade em diferentes partições são evoluções futuras.
+- As variáveis transformadas por PCA não permitem atribuir diretamente significado de negócio aos componentes.
+- Não existe integração com sistemas financeiros reais.
+
+## Próximos passos
+
+- Consolidar a documentação e publicar o repositório.
+- Avaliar estabilidade e generalização do modelo.
+- Investigar calibração de probabilidades.
+- Avaliar uma estratégia de divisão temporal.
+- Desenvolver uma API de inferência com FastAPI.
+- Investigar monitoramento de qualidade dos dados e drift.
+
+## Finalidade
+
+Este projeto demonstra conhecimentos de Python, análise de dados, Machine Learning, organização de código, persistência de modelos, inferência e testes automatizados.
+
+Não deve ser utilizado para bloquear transações reais sem validação adicional, avaliação operacional, controles de segurança e monitoramento adequado.
