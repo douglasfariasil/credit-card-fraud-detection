@@ -22,6 +22,7 @@ Implementado:
 A suíte possui 59 testes automatizados aprovados. O workflow publicado no GitHub também foi executado com sucesso.
 
 Próximas evoluções: avaliação temporal, calibração de probabilidades, explicabilidade, API de inferência e monitoramento.
+
 ## Problema de negócio
 
 Identificar transações potencialmente fraudulentas em uma base altamente desbalanceada.
@@ -123,11 +124,10 @@ Instale Python compatível com o `pyproject.toml` e o gerenciador de dependênci
 ### 2. Obter o projeto
 
 ```bash
-git clone https://github.com/douglasfariasil/credit-card-fraud-detection
+git clone https://github.com/douglasfariasil/credit-card-fraud-detection.git
 cd credit-card-fraud-detection
 ```
 
-Substitua `<URL_DO_REPOSITORIO>` pelo endereço do repositório publicado.
 
 ### 3. Instalar dependências
 
